@@ -60,11 +60,15 @@ async def run_pending_migrations():
         import os
         alembic_cmd = os.path.join(os.path.dirname(sys.executable), "alembic")
         
+        # Ensure environment variables are passed to the subprocess
+        env = os.environ.copy()
+        
         logger.info(f"Running '{alembic_cmd} upgrade head'...")
         process = await asyncio.create_subprocess_exec(
             alembic_cmd, "upgrade", "head",
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
+            stderr=asyncio.subprocess.PIPE,
+            env=env
         )
         
         stdout, stderr = await process.communicate()
