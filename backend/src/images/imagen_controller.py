@@ -64,11 +64,8 @@ async def generate_images(
             workspace_id=image_request.workspace_id, user=current_user
         )
 
-        # Get the executor from the app state
-        executor = request.app.state.executor
-
-        return await service.start_image_generation_job(
-            request_dto=image_request, user=current_user, executor=executor
+        return await service.generate_images_sync(
+            request_dto=image_request, user=current_user
         )
     except HTTPException as http_exception:
         raise http_exception
