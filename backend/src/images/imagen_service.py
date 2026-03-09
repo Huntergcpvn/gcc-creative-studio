@@ -496,16 +496,20 @@ def _process_image_in_background(
                     cfg = config_service
                     
                     # Initialize GenAI client in the worker process
+                    worker_logger.info("Initializing GenAI client in background process...")
                     client = GenAIModelSetup.init()
+                    worker_logger.info("GenAI client initialized successfully.")
 
                     # --- GENERATION LOGIC ---
                     start_time = time.monotonic()
-                    gcs_output_directory = f"gs://{cfg.GENMEDIA_BUCKET}"
+                    gcs_output_directory = f"gs://{cfg.GENMEDIA_BUCKET}/generated_images"
 
                     original_prompt = request_dto.prompt
+                    worker_logger.info(f"Enhancing prompt: {original_prompt[:50]}...")
                     rewritten_prompt = await gemini_service.enhance_prompt_from_dto(
                         dto=request_dto, target_type=PromptTargetEnum.IMAGE
                     )
+                    worker_logger.info(f"Rewritten prompt: {rewritten_prompt[:50]}...")
                     request_dto.prompt = rewritten_prompt
 
                     source_assets: List[SourceAssetLink] = []
@@ -558,6 +562,7 @@ def _process_image_in_background(
                         if not reference_images_for_api:
                             if request_dto.generation_model.is_gemini_image_model:
                                 # --- GEMINI FLASH TEXT-TO-IMAGE ---
+                                worker_logger.info(f"Starting Gemini Flash text-to-image generation for model {request_dto.generation_model.value}")
                                 # Run async tasks in the worker's event loop
                                 tasks = [
                                     asyncio.to_thread(
@@ -574,6 +579,7 @@ def _process_image_in_background(
                                     for _ in range(request_dto.number_of_media)
                                 ]
                                 gemini_images_response = await asyncio.gather(*tasks)
+                                worker_logger.info(f"Received {len(gemini_images_response)} responses from Gemini")
                                 all_generated_images = [
                                     img for img, _ in gemini_images_response if img
                                 ]
@@ -749,6 +755,7 @@ def _process_image_in_background(
                             "source_media_items": [smi.model_dump() for smi in request_dto.source_media_items] if request_dto.source_media_items else None,
                             "mime_type": mime_type,
                         }
+                        worker_logger.info(f"Updating database for media item {media_item_id} with {len(permanent_gcs_uris)} images")
                         await media_repo.update(media_item_id, update_data)
                         worker_logger.info(f"Successfully processed image job {media_item_id}")
 
