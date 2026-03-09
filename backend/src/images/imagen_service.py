@@ -1433,7 +1433,7 @@ class ImagenService:
         )
 
     async def get_media_item_with_presigned_urls(
-        self, media_id: str
+        self, media_id: int
     ) -> Optional[MediaItemResponse]:
         """
         Fetches a MediaItem by its ID and enriches it with presigned URLs.
@@ -1445,7 +1445,7 @@ class ImagenService:
             A MediaItemResponse object with presigned URLs, or None if not found.
         """
         # 1. Fetch the base document from Firestore
-        media_item = self.media_repo.get_by_id(media_id)
+        media_item = await self.media_repo.get_by_id(media_id)
         if not media_item:
             return None
 
