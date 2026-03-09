@@ -65,8 +65,7 @@ class FirebaseClient:
                     f"Firebase App Name: {firebase_admin.get_app().name}"
                 )
 
-                # Check if reauthentication is needed
-                self.check_adc_authentication()
+                # self.check_adc_authentication() # Disabled to avoid Rate Limit errors on Cloud Run
 
         except Exception as e:
             logger.critical(
