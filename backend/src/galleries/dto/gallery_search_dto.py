@@ -27,6 +27,6 @@ class GallerySearchDto(BaseSearchDto):
     mime_type: Optional[Union[MimeTypeEnum, WildcardMimeTypeEnum]] = None
     model: Optional[GenerationModelEnum] = None
     status: Optional[JobStatusEnum] = None
-    workspace_id: int = Field(
-        ge=1, description="The ID of the workspace to search within."
+    workspace_id: Optional[int] = Field(
+        default=None, ge=1, description="The ID of the workspace to search within."
     )

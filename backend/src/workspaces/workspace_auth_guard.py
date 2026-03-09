@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Annotated
+from typing import Annotated, Optional
 
 from fastapi import Depends, HTTPException, status
 
@@ -34,15 +34,24 @@ class WorkspaceAuth:
 
     async def authorize(
         self,
-        workspace_id: int,
+        workspace_id: Optional[int],
         user: UserModel,
-    ) -> WorkspaceModel:
+    ) -> Optional[WorkspaceModel]:
         """
         The core authorization logic. Checks if a user has rights to a workspace.
 
         Raises HTTPException if unauthorized.
         Returns the WorkspaceModel if authorized.
         """
+        if workspace_id is None:
+            # If no workspace_id is provided, only admins can proceed (global view)
+            if UserRoleEnum.ADMIN in user.roles:
+                return None
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Workspace ID is required for non-admin users.",
+            )
+
         # Check scope first (efficient query)
         scope = await self.workspace_repo.get_scope(workspace_id)
 
