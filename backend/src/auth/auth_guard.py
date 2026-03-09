@@ -83,6 +83,14 @@ async def get_current_user(
                 detail="Forbidden: User identity could not be confirmed from token.",
             )
 
+        # If ALLOWED_EMAILS is configured, check if the user's email is on the list.
+        if config_service.ALLOWED_EMAILS:
+            if email not in config_service.ALLOWED_EMAILS:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail=f"User '{email}' is not in the allowed emails list.",
+                )
+
         # If ALLOWED_ORGS is configured, check the user's organization.
         if config_service.ALLOWED_ORGS:
             if (

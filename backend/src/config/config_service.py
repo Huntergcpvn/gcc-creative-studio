@@ -50,6 +50,9 @@ class ConfigService(BaseSettings):
     ALLOWED_ORGS_STR: str = Field(
         default="", alias="IDENTITY_PLATFORM_ALLOWED_ORGS"
     )
+    ALLOWED_EMAILS_STR: str = Field(
+        default="", alias="IDENTITY_PLATFORM_ALLOWED_EMAILS"
+    )
 
     # --- Storage ---
     # The defaults will be set in the validator below to prevent recursion.
@@ -130,7 +133,6 @@ class ConfigService(BaseSettings):
 
         return self
 
-    # This computed field cleanly separates the raw string from the processed set.
     @computed_field
     @property
     def ALLOWED_ORGS(self) -> Set[str]:
@@ -138,6 +140,15 @@ class ConfigService(BaseSettings):
             org.strip()
             for org in self.ALLOWED_ORGS_STR.split(",")
             if org.strip()
+        )
+
+    @computed_field
+    @property
+    def ALLOWED_EMAILS(self) -> Set[str]:
+        return set(
+            email.strip()
+            for email in self.ALLOWED_EMAILS_STR.split(",")
+            if email.strip()
         )
 
     @computed_field
